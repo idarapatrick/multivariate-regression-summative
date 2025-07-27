@@ -25,6 +25,8 @@ app.add_middleware(
 
 # Pydantic models for request/response
 class PredictionRequest(BaseModel):
+    model_config = {"protected_namespaces": ()}
+    
     age: int = Field(..., ge=30, le=100, description="Age in years (30-100)")
     sex: str = Field(..., description="Sex: 'Men' or 'Women'")
     year: int = Field(..., ge=1990, le=2030, description="Year (1990-2030)")
@@ -56,6 +58,8 @@ class PredictionRequest(BaseModel):
         return v.title()
 
 class PredictionResponse(BaseModel):
+    model_config = {"protected_namespaces": ()}
+    
     prediction: float = Field(..., description="Predicted hypertension prevalence")
     age_group: str = Field(..., description="Age group corresponding to the input age")
     message: str = Field(..., description="Human-readable message")
@@ -71,12 +75,51 @@ def load_model():
         # Load model from current directory
         model_path = 'hypertension_model.pkl'
         
+        # Check if file exists
+        if not os.path.exists(model_path):
+            print(f"❌ Model file not found: {model_path}")
+            print(f"Current working directory: {os.getcwd()}")
+            print(f"Files in directory: {os.listdir('.')}")
+            
+            # Try alternative paths
+            alternative_paths = [
+                './hypertension_model.pkl',
+                '../hypertension_model.pkl',
+                '/app/hypertension_model.pkl',
+                '/tmp/hypertension_model.pkl'
+            ]
+            
+            for alt_path in alternative_paths:
+                if os.path.exists(alt_path):
+                    print(f"✅ Found model at alternative path: {alt_path}")
+                    model_path = alt_path
+                    break
+            else:
+                print("❌ Model file not found in any location")
+                return False
+        
+        print(f"📁 Loading model from: {os.path.abspath(model_path)}")
+        
         with open(model_path, 'rb') as file:
             model_data = pickle.load(file)
+        
+        # Verify model data structure
+        required_keys = ['model', 'scaler', 'feature_names', 'model_name', 'age_mapping', 'sex_mapping']
+        missing_keys = [key for key in required_keys if key not in model_data]
+        
+        if missing_keys:
+            print(f"❌ Model data missing keys: {missing_keys}")
+            return False
+        
         print("✅ Model loaded successfully!")
+        print(f"📊 Model name: {model_data['model_name']}")
+        print(f"🔧 Features: {len(model_data['feature_names'])} features")
         return True
+        
     except Exception as e:
         print(f"❌ Error loading model: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def age_to_group(age: int) -> str:
@@ -165,8 +208,16 @@ def make_prediction(age: int, sex: str, year: int, country: str) -> dict:
 async def startup_event():
     """Load model on startup"""
     print("🚀 Starting Hypertension Prediction API...")
-    if not load_model():
-        print("⚠️ Warning: Model could not be loaded. API may not function properly.")
+    print(f"📂 Current working directory: {os.getcwd()}")
+    print(f"📁 Files in directory: {os.listdir('.')}")
+    
+    success = load_model()
+    if success:
+        print("✅ API startup completed successfully!")
+    else:
+        print("❌ API startup failed - Model not loaded!")
+        print("⚠️ Warning: API may not function properly without the model.")
+        print("🔄 Will attempt to load model on first prediction request...")
 
 @app.get("/")
 async def root():
@@ -182,9 +233,12 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     return {
-        "status": "healthy",
+        "status": "healthy" if model_data is not None else "unhealthy",
         "model_loaded": model_data is not None,
-        "model_name": model_data['model_name'] if model_data else None
+        "model_name": model_data['model_name'] if model_data else None,
+        "model_features": len(model_data['feature_names']) if model_data else 0,
+        "working_directory": os.getcwd(),
+        "model_file_exists": os.path.exists('hypertension_model.pkl') if model_data else False
     }
 
 @app.post("/predict", response_model=PredictionResponse)
@@ -197,6 +251,12 @@ async def predict_hypertension(request: PredictionRequest):
     - **year**: Year (1990-2030)
     - **country**: Country name (must be a valid African country)
     """
+    # Try to load model if not already loaded
+    if model_data is None:
+        print("🔄 Attempting to load model on demand...")
+        if not load_model():
+            raise HTTPException(status_code=500, detail="Model not loaded and could not be loaded")
+    
     try:
         result = make_prediction(
             age=request.age,
