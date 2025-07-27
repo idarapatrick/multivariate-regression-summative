@@ -24,7 +24,7 @@ The system analyzes demographic and geographic factors to predict hypertension r
 ### **Web API**
 - **Backend**: FastAPI-based prediction service with CORS middleware
 - **Deployment**: Cloud-hosted at `https://prediction-api.up.railway.app`
-- **Documentation**: Public Swagger UI at `/docs` with Pydantic validation
+- **Documentation**: Public Swagger UI at `https://prediction-api.up.railway.app/docs` with Pydantic validation
 - **Integration**: RESTful API with comprehensive input validation
 
 ## Technical Architecture

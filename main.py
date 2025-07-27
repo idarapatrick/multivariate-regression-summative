@@ -1,17 +1,40 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
+from contextlib import asynccontextmanager
 import pickle
 import os
 import numpy as np
 import pandas as pd
 from typing import Optional
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events"""
+    # Startup
+    print("Starting Hypertension Prediction API...")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Files in directory: {os.listdir('.')}")
+    
+    success = load_model()
+    if success:
+        print("API startup completed successfully!")
+    else:
+        print("API startup failed - Model not loaded!")
+        print("Warning: API may not function properly without the model.")
+        print("Will attempt to load model on first prediction request...")
+    
+    yield
+    
+    # Shutdown
+    print("Shutting down Hypertension Prediction API...")
+
 # Create FastAPI app
 app = FastAPI(
     title="Hypertension Prediction API",
     description="API for predicting hypertension prevalence in African countries",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Add CORS middleware
@@ -79,7 +102,7 @@ def load_model():
         
         # Check if file exists
         if not os.path.exists(model_path):
-            print(f"❌ Model file not found: {model_path}")
+            print(f"Model file not found: {model_path}")
             print(f"Current working directory: {os.getcwd()}")
             print(f"Files in directory: {os.listdir('.')}")
             
@@ -93,14 +116,14 @@ def load_model():
             
             for alt_path in alternative_paths:
                 if os.path.exists(alt_path):
-                    print(f"✅ Found model at alternative path: {alt_path}")
+                    print(f"Found model at alternative path: {alt_path}")
                     model_path = alt_path
                     break
             else:
-                print("❌ Model file not found in any location")
+                print("Model file not found in any location")
                 return False
         
-        print(f"📁 Loading model from: {os.path.abspath(model_path)}")
+        print(f"Loading model from: {os.path.abspath(model_path)}")
         
         with open(model_path, 'rb') as file:
             model_data = pickle.load(file)
@@ -110,16 +133,16 @@ def load_model():
         missing_keys = [key for key in required_keys if key not in model_data]
         
         if missing_keys:
-            print(f"❌ Model data missing keys: {missing_keys}")
+            print(f"Model data missing keys: {missing_keys}")
             return False
         
-        print("✅ Model loaded successfully!")
-        print(f"📊 Model name: {model_data['model_name']}")
-        print(f"🔧 Features: {len(model_data['feature_names'])} features")
+        print("Model loaded successfully!")
+        print(f"Model name: {model_data['model_name']}")
+        print(f"Features: {len(model_data['feature_names'])} features")
         return True
         
     except Exception as e:
-        print(f"❌ Error loading model: {str(e)}")
+        print(f"Error loading model: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
@@ -206,20 +229,7 @@ def make_prediction(age: int, sex: str, year: int, country: str) -> dict:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Prediction error: {str(e)}")
 
-@app.on_event("startup")
-async def startup_event():
-    """Load model on startup"""
-    print("🚀 Starting Hypertension Prediction API...")
-    print(f"📂 Current working directory: {os.getcwd()}")
-    print(f"📁 Files in directory: {os.listdir('.')}")
-    
-    success = load_model()
-    if success:
-        print("✅ API startup completed successfully!")
-    else:
-        print("❌ API startup failed - Model not loaded!")
-        print("⚠️ Warning: API may not function properly without the model.")
-        print("🔄 Will attempt to load model on first prediction request...")
+
 
 @app.get("/")
 async def root():
