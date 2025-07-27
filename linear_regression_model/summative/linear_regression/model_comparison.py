@@ -112,7 +112,7 @@ def load_and_prepare_data():
     numeric_data = africa.copy()
     
     # Encode Sex
-    sex_map = {'Men': 0, 'Women': 1}
+    sex_map = {'male': 0, 'female': 1, 'Men': 0, 'Women': 1}
     numeric_data['Sex_binary'] = numeric_data['Sex'].map(sex_map)
     
     # Encode Age as ordinal
@@ -130,6 +130,9 @@ def load_and_prepare_data():
     X = numeric_data.drop(columns=['Prevalence of hypertension'])
     y = numeric_data['Prevalence of hypertension']
     
+    # Convert target to 1D array to avoid DataConversionWarning
+    y = y.values.ravel() if hasattr(y, 'values') else y.ravel()
+    
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     
@@ -141,6 +144,7 @@ def load_and_prepare_data():
     print(f"Data prepared successfully!")
     print(f"Training set: {X_train.shape[0]} samples, {X_train.shape[1]} features")
     print(f"Test set: {X_test.shape[0]} samples, {X_test.shape[1]} features")
+    print(f"Target variable shape: {y_train.shape}")
     
     return X_train_scaled, X_test_scaled, y_train, y_test, scaler, X.columns
 
@@ -148,6 +152,7 @@ def train_models(X_train, X_test, y_train, y_test):
     """Train all models and return results"""
     print("\nTraining models...")
     
+    # Target variables are already 1D arrays from data preparation
     models = {
         'Linear Regression (from scratch)': LinearRegressionFromScratch(learning_rate=0.01, max_iterations=1000),
         'Linear Regression (sklearn)': LinearRegression(),
@@ -214,6 +219,7 @@ def plot_scatter_comparison(results, y_test):
     """Plot scatter plots comparing actual vs predicted values"""
     print("\nPlotting scatter plots...")
     
+    # y_test is already a 1D array from data preparation
     n_models = len(results)
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
     axes = axes.flatten()
@@ -326,6 +332,44 @@ def print_detailed_results(results):
     print(f"   R² Score: {results[best_model_name]['r2']:.4f}")
     print(f"   RMSE: {results[best_model_name]['rmse']:.4f}")
 
+def plot_linear_regression_fit(X_test, y_test, linear_model, model_name="Linear Regression"):
+    """Plot scatter plot showing linear regression line fitting the dataset"""
+    print(f"\nPlotting {model_name} line fit...")
+    
+    # Get predictions
+    y_pred = linear_model.predict(X_test)
+    
+    # Create scatter plot
+    plt.figure(figsize=(10, 6))
+    
+    # Scatter plot of actual vs predicted
+    plt.scatter(y_test, y_pred, alpha=0.6, s=30, color='steelblue', label='Data Points')
+    
+    # Perfect prediction line (y=x)
+    min_val = min(y_test.min(), y_pred.min())
+    max_val = max(y_test.max(), y_pred.max())
+    plt.plot([min_val, max_val], [min_val, max_val], 'r--', linewidth=2, label='Perfect Prediction (y=x)')
+    
+    # Calculate and plot the actual linear regression line
+    # Fit a line through the actual vs predicted points
+    from sklearn.linear_model import LinearRegression
+    line_fitter = LinearRegression()
+    line_fitter.fit(y_test.reshape(-1, 1), y_pred)
+    
+    # Create line points
+    line_x = np.linspace(min_val, max_val, 100)
+    line_y = line_fitter.predict(line_x.reshape(-1, 1))
+    
+    plt.plot(line_x, line_y, 'g-', linewidth=2, label=f'{model_name} Fit Line')
+    
+    plt.xlabel('Actual Values', fontsize=12)
+    plt.ylabel('Predicted Values', fontsize=12)
+    plt.title(f'{model_name} Line Fit to Dataset\nR² = {r2_score(y_test, y_pred):.4f}', fontsize=14, fontweight='bold')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
 def main():
     """Main function to run the complete model comparison"""
     print("="*80)
@@ -342,6 +386,12 @@ def main():
     plot_loss_curves(results)
     plot_scatter_comparison(results, y_test)
     plot_performance_comparison(results)
+    
+    # Plot specific linear regression line fit (for rubric requirement)
+    if 'Linear Regression (sklearn)' in results:
+        plot_linear_regression_fit(X_test, y_test, results['Linear Regression (sklearn)']['model'], "Linear Regression (sklearn)")
+    if 'Linear Regression (from scratch)' in results:
+        plot_linear_regression_fit(X_test, y_test, results['Linear Regression (from scratch)']['model'], "Linear Regression (from scratch)")
     
     # Print detailed results
     print_detailed_results(results)

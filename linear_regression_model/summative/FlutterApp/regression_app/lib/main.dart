@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
 void main() {
@@ -19,25 +20,26 @@ class UbuntuHypertensionApp extends StatelessWidget {
           seedColor: Color(0xFFE47B02),
           brightness: Brightness.light,
         ),
-        fontFamily: 'Ubuntu',
-        textTheme: TextTheme(
-          headlineLarge: TextStyle(
-            color: Color(0xFF2C2C2C),
+        textTheme: GoogleFonts.loraTextTheme().copyWith(
+          headlineLarge: GoogleFonts.playfairDisplay(
+            color: Color(0xFF1A1A1A),
             fontWeight: FontWeight.bold,
             fontSize: 28,
           ),
-          headlineMedium: TextStyle(
-            color: Color(0xFF4A4A4A),
+          headlineMedium: GoogleFonts.playfairDisplay(
+            color: Color(0xFF2C2C2C),
             fontWeight: FontWeight.w600,
             fontSize: 24,
           ),
-          bodyLarge: TextStyle(
-            color: Color(0xFF2C2C2C),
+          bodyLarge: GoogleFonts.lora(
+            color: Color(0xFF1A1A1A),
             fontSize: 16,
+            height: 1.6,
           ),
-          bodyMedium: TextStyle(
-            color: Color(0xFF4A4A4A),
+          bodyMedium: GoogleFonts.lora(
+            color: Color(0xFF2C2C2C),
             fontSize: 14,
+            height: 1.5,
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -210,24 +212,22 @@ class HomePage extends StatelessWidget {
                           size: 50,
                           color: Colors.white,
                         ),
-                        // Alternative: Use custom image
-                        // child: Image.asset(
-                        //   'assets/images/icons/heart_icon.png',
-                        //   width: 50,
-                        //   height: 50,
-                        //   color: Colors.white,
-                        // ),
                       ),
                       SizedBox(height: 16),
                       Text(
                         'Ubuntu',
-                        style: Theme.of(context).textTheme.headlineLarge,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                        ),
                       ),
                       Text(
                         'Hypertension Prediction',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Color(0xFFE47B02),
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 20,
                           fontWeight: FontWeight.w500,
+                          color: Color(0xFFE47B02),
                         ),
                       ),
                       SizedBox(height: 8),
@@ -280,10 +280,11 @@ class HomePage extends StatelessWidget {
                       SizedBox(height: 12),
                       Text(
                         'Ubuntu is an African philosophy meaning "humanity". It emphasizes the interconnectedness of all people. "I am because we are". This app embodies that spirit by providing healthcare insights to strengthen our African community.',
-                        style: TextStyle(
+                        textAlign: TextAlign.justify,
+                        style: GoogleFonts.lora(
                           fontSize: 14,
-                          color: Color(0xFF4A4A4A),
-                          height: 1.5,
+                          color: Color(0xFF2C2C2C),
+                          height: 1.6,
                         ),
                       ),
                     ],
@@ -327,11 +328,12 @@ class HomePage extends StatelessWidget {
                       ),
                       SizedBox(height: 12),
                       Text(
-                        'Get personalized hypertension risk predictions based on your age, gender, and country. Our AI model uses data from across African nations to provide accurate assessments.',
-                        style: TextStyle(
+                        'Hypertension risk predictions based on your age, gender, and country. We use data from across African nations to provide accurate assessments.',
+                        textAlign: TextAlign.justify,
+                        style: GoogleFonts.lora(
                           fontSize: 14,
-                          color: Color(0xFF4A4A4A),
-                          height: 1.5,
+                          color: Color(0xFF2C2C2C),
+                          height: 1.6,
                         ),
                       ),
                       SizedBox(height: 16),
@@ -377,10 +379,11 @@ class HomePage extends StatelessWidget {
                 SizedBox(height: 24),
                 Center(
                   child: Text(
-                    '🌍 Proudly African 🌍',
-                    style: TextStyle(
+                    'Proudly African',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.playfairDisplay(
                       fontSize: 16,
-                      color: Color(0xFF666666),
+                      color: Color(0xFF2C2C2C),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -410,14 +413,14 @@ class HomePage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2C2C2C),
+                color: Color(0xFF1A1A1A),
               ),
             ),
             Text(
               range,
               style: TextStyle(
                 fontSize: 8,
-                color: Color(0xFF666666),
+                color: Color(0xFF2C2C2C),
               ),
             ),
           ],
@@ -475,7 +478,7 @@ class _PredictionPageState extends State<PredictionPage> {
       // Debug: Print what we're sending
       print('Sending to API: ${jsonEncode(requestData)}');
       
-      // Replace with your actual Railway API endpoint
+  
       final response = await http.post(
         Uri.parse('https://prediction-api.up.railway.app/predict'),
         headers: {'Content-Type': 'application/json'},
@@ -565,21 +568,19 @@ class _PredictionPageState extends State<PredictionPage> {
     }
 
     setState(() {
-      _result = '''Hi, ${_nameController.text}! 
+      _result = '''Hi, ${_nameController.text}!
 
-${emoji} **HYPER TENSION RISK ASSESSMENT** ${emoji}
+HYPER TENSION RISK ASSESSMENT
 
-**Prevalence:** ${(prediction * 100).toStringAsFixed(1)}%
-**Risk Level:** $riskLevel
-**Age Group:** $ageGroup
+Prevalence: ${(prediction * 100).toStringAsFixed(1)}%
+Risk Level: $riskLevel
+Age Group: $ageGroup
 
-**Health Advice:**
+Health Advice:
 $advice
 
-**Additional Information:**
+Additional Information:
 $message
-
-**Model Used:** $modelUsed
 
 This prediction is based on your demographic profile (age: ${_ageController.text}, sex: $_selectedSex, country: $_selectedCountry).
 
@@ -803,10 +804,10 @@ ${prediction == 0.35 ? 'Note: This is a simulated result for demo purposes.' : '
                         SizedBox(height: 16),
                         Text(
                           _result,
-                          style: TextStyle(
+                          style: GoogleFonts.lora(
                             fontSize: 16,
-                            color: Color(0xFF2C2C2C),
-                            height: 1.5,
+                            color: Color(0xFF1A1A1A),
+                            height: 1.6,
                           ),
                         ),
                       ],

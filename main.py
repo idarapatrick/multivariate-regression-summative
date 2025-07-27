@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 import pickle
 import os
 import numpy as np
@@ -32,13 +32,15 @@ class PredictionRequest(BaseModel):
     year: int = Field(..., ge=1990, le=2030, description="Year (1990-2030)")
     country: str = Field(..., min_length=2, max_length=100, description="Country name")
     
-    @validator('sex')
+    @field_validator('sex')
+    @classmethod
     def validate_sex(cls, v):
         if v.lower() not in ['men', 'women']:
             raise ValueError('Sex must be "Men" or "Women"')
         return v.title()  # Normalize to title case
     
-    @validator('country')
+    @field_validator('country')
+    @classmethod
     def validate_country(cls, v):
         # List of valid African countries from the dataset
         valid_countries = [

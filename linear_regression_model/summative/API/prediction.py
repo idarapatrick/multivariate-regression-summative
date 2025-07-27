@@ -1,9 +1,31 @@
- # Prediction logic and model loading
+import joblib
 import numpy as np
 import pandas as pd
+import os
 
+def load_model():
+    """Load the saved best model"""
+    try:
+        # Try multiple possible paths for the model file
+        possible_paths = [
+            'hypertension_model.pkl',
+            '../linear_regression/hypertension_model.pkl',
+            '../linear_regression/best_hypertension_model.pkl',
+            'best_hypertension_model.pkl'
+        ]
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                model_data = joblib.load(path)
+                print(f"✅ Model loaded from: {path}")
+                return model_data
+        
+        print("❌ Model file not found. Please ensure hypertension_model.pkl exists.")
+        return None
+    except Exception as e:
+        print(f"❌ Error loading model: {str(e)}")
+        return None
 
-# Age mapping functions
 def age_to_group(age):
     """Convert numeric age to age group string"""
     if 30 <= age <= 34:
@@ -43,42 +65,8 @@ def age_to_encoded(age):
     else:
         return None
 
-
-def make_prediction(age, sex, country, year):
-    """
-    Main prediction function for the API
-    """
-    # Validate inputs
-    errors = validate_prediction_input(age, sex, country, year)
-    if errors:
-        raise ValueError(f"Invalid inputs: {', '.join(errors)}")
-    
-    # Convert age to encoded value
-    age_encoded = age_to_encoded(age)
-    if age_encoded is None:
-        raise ValueError(f"Age {age} is outside the supported range (30-80+)")
-    
-    # Convert sex to binary
-    sex_binary = 0 if sex.lower() in ['male', 'men'] else 1
-    
-    # For now, use a simple placeholder prediction
-    # In the future, you'll load your trained model here
-    # model = load_model()  # You'll need to implement this
-    # prediction = model.predict(input_data)[0]
-    
-    # Simple placeholder prediction based on age and sex
-    base_risk = 20.0
-    age_factor = age_encoded * 2.5  # Higher age = higher risk
-    sex_factor = 5.0 if sex_binary == 1 else 0.0  # Women slightly higher risk
-    
-    prediction = base_risk + age_factor + sex_factor
-    
-    return round(prediction, 2)
-
-
-# Validation function
-def validate_prediction_input(age, sex, country, year):
-    """Validate inputs before prediction"""
+def validate_inputs(age, sex, country, year):
+    """Validate input parameters"""
     errors = []
     
     # Check age
@@ -97,19 +85,151 @@ def validate_prediction_input(age, sex, country, year):
     
     return errors
 
-def encoded_to_age_group(encoded_value):
-    """Convert encoded value back to age group"""
-    age_order = ['30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80+']
-    if 0 <= encoded_value < len(age_order):
-        return age_order[encoded_value]
-    else:
-        return None
+def make_prediction(age, sex, country, year):
+    """
+    Make prediction using the best trained model
+    
+    Parameters:
+    - age: int (30-100)
+    - sex: str ('male'/'female' or 'men'/'women')
+    - country: str (country name)
+    - year: int (1990-2030)
+    
+    Returns:
+    - dict with prediction results
+    """
+    # Load model
+    model_data = load_model()
+    if model_data is None:
+        return {"error": "Model not found"}
+    
+    # Validate inputs
+    errors = validate_inputs(age, sex, country, year)
+    if errors:
+        return {"error": "Validation failed", "details": errors}
+    
+    try:
+        # Extract model components
+        model = model_data['model']
+        scaler = model_data['scaler']
+        feature_names = model_data['feature_names']
+        model_name = model_data['model_name']
+        
+        # Convert age to encoded value
+        age_encoded = age_to_encoded(age)
+        if age_encoded is None:
+            return {"error": f"Age {age} is outside the supported range (30-80+)"}
+        
+        # Convert sex to binary
+        sex_binary = 0 if sex.lower() in ['male', 'men'] else 1
+        
+        # Create feature vector
+        # Note: This is a simplified version. In practice, you'd need to handle country encoding
+        # For now, we'll use a placeholder approach
+        features = np.zeros(len(feature_names))
+        
+        # Set the features we know
+        if 'Sex_binary' in feature_names:
+            features[feature_names.index('Sex_binary')] = sex_binary
+        if 'Age_encoded' in feature_names:
+            features[feature_names.index('Age_encoded')] = age_encoded
+        if 'Year' in feature_names:
+            features[feature_names.index('Year')] = year
+        
+        # Reshape for prediction
+        features = features.reshape(1, -1)
+        
+        # Scale features
+        features_scaled = scaler.transform(features)
+        
+        # Make prediction
+        prediction = model.predict(features_scaled)[0]
+        
+        # Get age group
+        age_group = age_to_group(age)
+        
+        return {
+            "prediction": round(prediction, 2),
+            "age_group": age_group,
+            "model_used": model_name,
+            "input_features": {
+                "age": age,
+                "age_group": age_group,
+                "age_encoded": age_encoded,
+                "sex": sex,
+                "sex_binary": sex_binary,
+                "country": country,
+                "year": year
+            }
+        }
+        
+    except Exception as e:
+        return {"error": f"Prediction failed: {str(e)}"}
 
-# Test the functions
-print("Testing Age Mapping Functions:")
-print("=" * 40)
-test_ages = [33, 40, 55, 85, 13, 25]
-for age in test_ages:
-    age_group = age_to_group(age)
-    encoded = age_to_encoded(age)
-    print(f"Age {age} → Group: {age_group} → Encoded: {encoded}")
+def test_predictions():
+    """Test the prediction function with various inputs"""
+    print("Testing prediction function...")
+    print("="*50)
+    
+    test_cases = [
+        {"age": 40, "sex": "male", "country": "Nigeria", "year": 2020},
+        {"age": 55, "sex": "female", "country": "South Africa", "year": 2020},
+        {"age": 70, "sex": "male", "country": "Kenya", "year": 2020},
+        {"age": 25, "sex": "female", "country": "Ghana", "year": 2020},  # Should show error
+        {"age": 45, "sex": "invalid", "country": "Egypt", "year": 2020},  # Should show error
+    ]
+    
+    for i, test_case in enumerate(test_cases, 1):
+        print(f"\nTest Case {i}:")
+        print(f"Input: {test_case}")
+        
+        result = make_prediction(**test_case)
+        
+        if "error" in result:
+            print(f"❌ Error: {result['error']}")
+        else:
+            print(f"✅ Prediction: {result['prediction']}%")
+            print(f"   Age Group: {result['age_group']}")
+            print(f"   Model Used: {result['model_used']}")
+
+def interactive_prediction():
+    """Interactive prediction interface"""
+    print("\n" + "="*50)
+    print("HYPERTENSION PREVALENCE PREDICTION")
+    print("="*50)
+    
+    while True:
+        try:
+            print("\nEnter prediction parameters (or 'quit' to exit):")
+            
+            age_input = input("Age (30-100): ").strip()
+            if age_input.lower() == 'quit':
+                break
+            
+            age = int(age_input)
+            sex = input("Sex (male/female or men/women): ").strip()
+            country = input("Country: ").strip()
+            year = int(input("Year (1990-2030): ").strip())
+            
+            result = make_prediction(age, sex, country, year)
+            
+            if "error" in result:
+                print(f"❌ Error: {result['error']}")
+            else:
+                print(f"\n✅ PREDICTION RESULTS:")
+                print(f"   Hypertension Prevalence: {result['prediction']}%")
+                print(f"   Age Group: {result['age_group']}")
+                print(f"   Model Used: {result['model_used']}")
+                
+        except ValueError:
+            print("❌ Invalid input. Please enter valid numbers.")
+        except KeyboardInterrupt:
+            print("\n\nExiting...")
+            break
+
+if __name__ == "__main__":
+    # Test predictions
+    test_predictions()
+    
+    # Interactive mode
+    interactive_prediction() 
