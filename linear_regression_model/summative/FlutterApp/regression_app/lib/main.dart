@@ -8,6 +8,8 @@ void main() {
 }
 
 class UbuntuHypertensionApp extends StatelessWidget {
+  const UbuntuHypertensionApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -81,6 +83,8 @@ class UbuntuHypertensionApp extends StatelessWidget {
 }
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -175,6 +179,8 @@ class _SplashScreenState extends State<SplashScreen>
 }
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -431,6 +437,8 @@ class HomePage extends StatelessWidget {
 }
 
 class PredictionPage extends StatefulWidget {
+  const PredictionPage({super.key});
+
   @override
   _PredictionPageState createState() => _PredictionPageState();
 }
