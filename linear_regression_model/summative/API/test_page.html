@@ -184,7 +184,7 @@
                     const result = await response.json();
                     resultDiv.className = 'result success';
                     resultDiv.innerHTML = `
-                        <h3>✅ Prediction Successful!</h3>
+                        <h3>Prediction Successful!</h3>
                         <p><strong>Predicted Prevalence:</strong> ${(result.prediction * 100).toFixed(2)}%</p>
                         <p><strong>Age Group:</strong> ${result.age_group}</p>
                         <p><strong>Model Used:</strong> ${result.model_used}</p>
@@ -194,7 +194,7 @@
                     const error = await response.text();
                     resultDiv.className = 'result error';
                     resultDiv.innerHTML = `
-                        <h3>❌ Prediction Failed</h3>
+                        <h3>Prediction Failed</h3>
                         <p><strong>Error:</strong> ${error}</p>
                         <p>Make sure the API is running on localhost:8000</p>
                     `;
@@ -202,7 +202,7 @@
             } catch (error) {
                 resultDiv.className = 'result error';
                 resultDiv.innerHTML = `
-                    <h3>❌ Connection Error</h3>
+                    <h3>Connection Error</h3>
                     <p><strong>Error:</strong> ${error.message}</p>
                     <p>Make sure the API is running on localhost:8000</p>
                 `;

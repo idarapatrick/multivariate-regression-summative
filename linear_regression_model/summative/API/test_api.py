@@ -60,7 +60,7 @@ if __name__ == "__main__":
     for test_name, test_func in tests:
         print(f"\nTesting {test_name}...")
         success = test_func()
-        status = "✅ PASS" if success else "❌ FAIL"
+        status = "✅ PASS" if success else "FAIL"
         print(f"{test_name}: {status}")
     
     print("\n" + "=" * 50)

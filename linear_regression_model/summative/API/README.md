@@ -183,12 +183,12 @@ MODEL_PATH=hypertension_model.pkl  # Model file location
 
 ## Rubric Requirements Compliance
 
-### ✅ API Implementation Checklist
-1. **API endpoint for prediction** ✅ - `POST /predict` endpoint implemented
-2. **Public URL + Path to Swagger UI Documentation** ✅ - `https://prediction-api.up.railway.app/docs`
-3. **Implements the CORS middleware** ✅ - CORSMiddleware configured with full access
-4. **Implements constraints on Variables using Pydantic** ✅ - Field constraints and validators implemented
-5. **Each variable is associated to a datatype** ✅ - All variables have explicit data types defined
+### API Implementation Checklist
+1. **API endpoint for prediction** - `POST /predict` endpoint implemented
+2. **Public URL + Path to Swagger UI Documentation** - `https://prediction-api.up.railway.app/docs`
+3. **Implements the CORS middleware** - CORSMiddleware configured with full access
+4. **Implements constraints on Variables using Pydantic** - Field constraints and validators implemented
+5. **Each variable is associated to a datatype** - All variables have explicit data types defined
 
 ### Technical Implementation Details
 - **CORS Middleware**: `app.add_middleware(CORSMiddleware, allow_origins=["*"])`

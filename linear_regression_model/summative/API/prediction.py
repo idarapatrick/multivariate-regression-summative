@@ -17,13 +17,13 @@ def load_model():
         for path in possible_paths:
             if os.path.exists(path):
                 model_data = joblib.load(path)
-                print(f"✅ Model loaded from: {path}")
+                print(f"Model loaded from: {path}")
                 return model_data
         
-        print("❌ Model file not found. Please ensure hypertension_model.pkl exists.")
+        print("Model file not found. Please ensure hypertension_model.pkl exists.")
         return None
     except Exception as e:
-        print(f"❌ Error loading model: {str(e)}")
+        print(f"Error loading model: {str(e)}")
         return None
 
 def age_to_group(age):
@@ -123,9 +123,6 @@ def make_prediction(age, sex, country, year):
         # Convert sex to binary
         sex_binary = 0 if sex.lower() in ['male', 'men'] else 1
         
-        # Create feature vector
-        # Note: This is a simplified version. In practice, you'd need to handle country encoding
-        # For now, we'll use a placeholder approach
         features = np.zeros(len(feature_names))
         
         # Set the features we know
@@ -186,11 +183,11 @@ def test_predictions():
         result = make_prediction(**test_case)
         
         if "error" in result:
-            print(f"❌ Error: {result['error']}")
+            print(f"Error: {result['error']}")
         else:
-            print(f"✅ Prediction: {result['prediction']}%")
-            print(f"   Age Group: {result['age_group']}")
-            print(f"   Model Used: {result['model_used']}")
+            print(f"Prediction: {result['prediction']}%")
+            print(f"Age Group: {result['age_group']}")
+            print(f"Model Used: {result['model_used']}")
 
 def interactive_prediction():
     """Interactive prediction interface"""
@@ -214,15 +211,15 @@ def interactive_prediction():
             result = make_prediction(age, sex, country, year)
             
             if "error" in result:
-                print(f"❌ Error: {result['error']}")
+                print(f"Error: {result['error']}")
             else:
-                print(f"\n✅ PREDICTION RESULTS:")
+                print(f"\n PREDICTION RESULTS:")
                 print(f"   Hypertension Prevalence: {result['prediction']}%")
                 print(f"   Age Group: {result['age_group']}")
                 print(f"   Model Used: {result['model_used']}")
                 
         except ValueError:
-            print("❌ Invalid input. Please enter valid numbers.")
+            print("Invalid input. Please enter valid numbers.")
         except KeyboardInterrupt:
             print("\n\nExiting...")
             break

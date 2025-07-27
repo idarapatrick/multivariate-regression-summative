@@ -1,5 +1,8 @@
 # Hypertension Risk Prediction for African Populations
 
+## Demo Video
+[Link to YouTube Video](https://youtu.be/ZQDkel4qqQo)
+
 ## Project Overview
 
 This project addresses a critical healthcare challenge facing African communities: the early detection and prevention of hypertension. Using machine learning techniques, I've developed predictive models to identify individuals at risk of hypertension before clinical diagnosis, enabling timely intervention and improved health outcomes.
@@ -51,7 +54,7 @@ This system addresses several critical healthcare challenges:
 ## Getting Started
 
 ### For Data Scientists
-Navigate to `linear_regression_model/summative/linear_regression/` to access the Jupyter notebook containing the complete analysis pipeline.
+Navigate to `linear_regression_model/summative/multivariate_regression/` to access the Jupyter notebook containing the complete analysis pipeline.
 
 ### For Developers
 The mobile application code is located in `linear_regression_model/summative/FlutterApp/regression_app/`.
