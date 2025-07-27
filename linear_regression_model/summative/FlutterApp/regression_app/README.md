@@ -1,16 +1,38 @@
-# regression_app
+# Hypertension Prediction Flutter App
 
-A new Flutter project.
+A Flutter application for predicting hypertension prevalence in African countries using machine learning models.
+
+## Features
+
+- **Input Validation**: Age, sex, year, and country selection with validation
+- **API Integration**: Connects to the deployed FastAPI backend
+- **Real-time Predictions**: Get hypertension prevalence predictions instantly
+- **User-friendly Interface**: Clean, modern UI with Material Design 3
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+1. **Install Flutter dependencies:**
+   ```bash
+   flutter pub get
+   ```
 
-A few resources to get you started if this is your first Flutter project:
+2. **Run the app:**
+   ```bash
+   flutter run
+   ```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## API Endpoint
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The app connects to the deployed FastAPI backend at:
+`https://prediction-api.up.railway.app`
+
+## Supported Countries
+
+All African countries including Nigeria, South Africa, Kenya, Ghana, Egypt, Ethiopia, and more.
+
+## Input Requirements
+
+- **Age**: 30-100 years
+- **Sex**: Men or Women
+- **Year**: 1990-2030
+- **Country**: Select from available African countries

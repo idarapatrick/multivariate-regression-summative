@@ -28,7 +28,7 @@ class PredictionRequest(BaseModel):
     age: int = Field(..., ge=30, le=100, description="Age in years (30-100)")
     sex: str = Field(..., description="Sex: 'Men' or 'Women'")
     year: int = Field(..., ge=1990, le=2030, description="Year (1990-2030)")
-    country: str = Field(..., min_length=2, max_length=50, description="Country name")
+    country: str = Field(..., min_length=2, max_length=100, description="Country name")
     
     @validator('sex')
     def validate_sex(cls, v):
